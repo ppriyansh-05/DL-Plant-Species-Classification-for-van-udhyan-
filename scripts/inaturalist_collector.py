@@ -3,6 +3,7 @@ inaturalist_collector.py
 Standalone CLI and reproducible module for querying the official iNaturalist v1 API,
 collecting licensed photos (CC0, CC-BY, CC-BY-NC, CC-BY-SA, CC-BY-NC-SA),
 enforcing strict rate-limiting and taxonomy resolution,
+prioritizing observations from Pune, then Maharashtra, then India, and then Global fallback,
 and generating an attribution manifest.
 """
 
@@ -20,12 +21,17 @@ from tqdm import tqdm
 
 API_BASE = "https://api.inaturalist.org/v1"
 HEADERS = {
-    "User-Agent": "VanUdyanPlantClassificationStudentProject/1.0 (academic dataset collection; contact=rswf-pune-academic)"
+    "User-Agent": "VanUdyanPlantClassificationStudentProject/2.0 (academic dataset collection; contact=rswf-pune-academic)"
 }
 
 ALLOWED_PHOTO_LICENSES = {
     "cc0", "cc-by", "cc-by-nc", "cc-by-sa", "cc-by-nc-sa"
 }
+
+# Standard iNaturalist place identifiers for geographic prioritization
+PUNE_PLACE_ID = 32349        # Pune District, MH, IN
+MAHARASHTRA_PLACE_ID = 6683  # Maharashtra State, IN
+INDIA_PLACE_ID = 6681        # India
 
 TARGET_38_SPECIES = [
     "Aegle marmelos", "Alstonia scholaris", "Azadirachta indica", "Bauhinia racemosa",
@@ -44,9 +50,9 @@ class INaturalistCollector:
     def __init__(
         self,
         output_dir: str = "data/raw_inaturalist",
-        max_images_per_species: int = 30,
-        request_delay: float = 1.1,
-        timeout: int = 30
+        max_images_per_species: int = 50,
+        request_delay: float = 1.0,
+        timeout: int = 25
     ):
         self.output_dir = Path(output_dir)
         self.image_dir = self.output_dir / "images"
@@ -67,7 +73,7 @@ class INaturalistCollector:
         self.summary_rows = []
         self.seen_photo_ids = set()
         
-        # Resume if files exist
+        # Resume from existing manifest if present
         if self.metadata_csv.exists():
             existing_df = pd.read_csv(self.metadata_csv)
             self.metadata_rows = existing_df.to_dict("records")
@@ -91,7 +97,7 @@ class INaturalistCollector:
                 if attempt == retries - 1:
                     print(f"\n[API Error] Request failed for {url}: {exc}")
                     return None
-                time.sleep(min(30, 2 ** attempt))
+                time.sleep(min(20, 2 ** (attempt + 1)))
         return None
 
     @staticmethod
@@ -164,8 +170,7 @@ class INaturalistCollector:
             if m.get("scientific_name_requested") == scientific_name
         ]
         if len(existing_for_species) >= target_count:
-            print(f"Skipping {scientific_name}: already have {len(existing_for_species)} images.")
-            return
+            return len(existing_for_species)
 
         taxon = self.resolve_taxon(scientific_name)
         if not taxon:
@@ -176,7 +181,7 @@ class INaturalistCollector:
                 "downloaded": len(existing_for_species),
                 "status": "Exact taxon match not found"
             })
-            return
+            return len(existing_for_species)
 
         taxon_id = taxon.get("id")
         species_dir = self.image_dir / self.safe_name(scientific_name)
@@ -184,96 +189,116 @@ class INaturalistCollector:
         
         downloaded = len(existing_for_species)
         examined_observations = 0
-        page = 1
-        
-        while downloaded < target_count:
-            params = {
-                "taxon_id": taxon_id,
-                "photos": "true",
-                "per_page": 100,
-                "page": page,
-                "order_by": "created_at",
-                "order": "desc",
-            }
-            data = self.api_get("observations", params)
-            if not data or not data.get("results"):
+
+        # Tiered geographic prioritization: Pune -> Maharashtra -> India -> Global
+        TIERS = [
+            ("Pune", PUNE_PLACE_ID),
+            ("Maharashtra", MAHARASHTRA_PLACE_ID),
+            ("India", INDIA_PLACE_ID),
+            ("Global", None)
+        ]
+
+        for tier_name, place_id in TIERS:
+            if downloaded >= target_count:
                 break
-                
-            results = data["results"]
-            if not results:
-                break
-                
-            for obs in results:
-                examined_observations += 1
-                obs_id = obs.get("id")
-                obs_url = f"https://www.inaturalist.org/observations/{obs_id}" if obs_id else ""
-                taxon_info = obs.get("taxon") or {}
-                observer = obs.get("user") or {}
-                photos = obs.get("photos") or []
-                
-                for photo in photos:
-                    if downloaded >= target_count:
-                        break
-                    photo_id = photo.get("id")
-                    lic = self.licence_code(photo)
-                    photo_url = self.get_photo_url(photo)
-                    
-                    if lic not in ALLOWED_PHOTO_LICENSES or not photo_url:
-                        continue
-                    if photo_id and photo_id in self.seen_photo_ids:
-                        continue
-                        
-                    ext = os.path.splitext(urlparse(photo_url).path)[1].lower()
-                    if ext not in {".jpg", ".jpeg", ".png", ".webp"}:
-                        ext = ".jpg"
-                    image_id = photo_id or hashlib.sha1(photo_url.encode("utf-8")).hexdigest()[:12]
-                    filename = f"inat_{self.safe_name(scientific_name)}_{image_id}{ext}"
-                    dest = species_dir / filename
-                    
-                    if dest.exists() and dest.stat().st_size >= 1000:
-                        success, detail = True, "already_downloaded"
-                    else:
-                        success, detail = self.download_image(photo_url, dest)
-                        
-                    if not success:
-                        continue
-                        
-                    if photo_id:
-                        self.seen_photo_ids.add(photo_id)
-                    downloaded += 1
-                    
-                    coords = (obs.get("geojson") or {}).get("coordinates", [None, None])
-                    
-                    self.metadata_rows.append({
-                        "image_id": f"INAT_{photo_id}",
-                        "local_path": str(dest).replace("\\", "/"),
-                        "file_name": filename,
-                        "scientific_name_requested": scientific_name,
-                        "inat_taxon_id": taxon_id,
-                        "inat_taxon_name": taxon_info.get("name"),
-                        "observation_id": obs_id,
-                        "observation_url": obs_url,
-                        "photo_id": photo_id,
-                        "photo_url_downloaded": photo_url,
-                        "photo_attribution": photo.get("attribution"),
-                        "observer_name": observer.get("name"),
-                        "observer_login": observer.get("login"),
-                        "photo_license_code": lic,
-                        "photo_license_url": f"https://creativecommons.org/licenses/{lic}/4.0/" if lic.startswith("cc-") else ("https://creativecommons.org/publicdomain/zero/1.0/" if lic == "cc0" else ""),
-                        "observed_on": obs.get("observed_on"),
-                        "place_guess": obs.get("place_guess"),
-                        "latitude": coords[1] if len(coords) == 2 else None,
-                        "longitude": coords[0] if len(coords) == 2 else None,
-                        "source_dataset": "iNaturalist_API",
-                        "download_status": detail
-                    })
-                    
-                if downloaded >= target_count:
+
+            page = 1
+            max_pages = 4  # Up to 400 observations per geographic tier
+            while downloaded < target_count and page <= max_pages:
+                params = {
+                    "taxon_id": taxon_id,
+                    "photos": "true",
+                    "per_page": 100,
+                    "page": page,
+                    "order_by": "created_at",
+                    "order": "desc",
+                }
+                if place_id:
+                    params["place_id"] = place_id
+
+                data = self.api_get("observations", params)
+                if not data or not data.get("results"):
                     break
                     
-            if len(results) < 100:
-                break
-            page += 1
+                results = data["results"]
+                if not results:
+                    break
+                    
+                for obs in results:
+                    if downloaded >= target_count:
+                        break
+
+                    examined_observations += 1
+                    obs_id = obs.get("id")
+                    obs_url = f"https://www.inaturalist.org/observations/{obs_id}" if obs_id else ""
+                    taxon_info = obs.get("taxon") or {}
+                    observer = obs.get("user") or {}
+                    photos = obs.get("photos") or []
+                    
+                    for photo in photos:
+                        if downloaded >= target_count:
+                            break
+                        photo_id = photo.get("id")
+                        lic = self.licence_code(photo)
+                        photo_url = self.get_photo_url(photo)
+                        
+                        if lic not in ALLOWED_PHOTO_LICENSES or not photo_url:
+                            continue
+                        if photo_id and photo_id in self.seen_photo_ids:
+                            continue
+                            
+                        ext = os.path.splitext(urlparse(photo_url).path)[1].lower()
+                        if ext not in {".jpg", ".jpeg", ".png", ".webp"}:
+                            ext = ".jpg"
+                        image_id = photo_id or hashlib.sha1(photo_url.encode("utf-8")).hexdigest()[:12]
+                        filename = f"inat_{self.safe_name(scientific_name)}_{image_id}{ext}"
+                        dest = species_dir / filename
+                        
+                        if dest.exists() and dest.stat().st_size >= 1000:
+                            success, detail = True, "already_downloaded"
+                        else:
+                            success, detail = self.download_image(photo_url, dest)
+                            
+                        if not success:
+                            continue
+                            
+                        if photo_id:
+                            self.seen_photo_ids.add(photo_id)
+                        downloaded += 1
+                        
+                        coords = (obs.get("geojson") or {}).get("coordinates", [None, None])
+                        
+                        self.metadata_rows.append({
+                            "image_id": f"INAT_{photo_id}",
+                            "local_path": str(dest).replace("\\", "/"),
+                            "file_name": filename,
+                            "scientific_name_requested": scientific_name,
+                            "inat_taxon_id": taxon_id,
+                            "inat_taxon_name": taxon_info.get("name"),
+                            "observation_id": obs_id,
+                            "observation_url": obs_url,
+                            "photo_id": photo_id,
+                            "photo_url_downloaded": photo_url,
+                            "photo_attribution": photo.get("attribution"),
+                            "observer_name": observer.get("name"),
+                            "observer_login": observer.get("login"),
+                            "photo_license_code": lic,
+                            "photo_license_url": f"https://creativecommons.org/licenses/{lic}/4.0/" if lic.startswith("cc-") else ("https://creativecommons.org/publicdomain/zero/1.0/" if lic == "cc0" else ""),
+                            "observed_on": obs.get("observed_on"),
+                            "place_guess": obs.get("place_guess"),
+                            "geographic_scope": tier_name,
+                            "latitude": coords[1] if len(coords) == 2 else None,
+                            "longitude": coords[0] if len(coords) == 2 else None,
+                            "source_dataset": "iNaturalist_API",
+                            "download_status": detail
+                        })
+                        
+                    if downloaded >= target_count:
+                        break
+                        
+                if len(results) < 100:
+                    break
+                page += 1
             
         self.summary_rows.append({
             "scientific_name": scientific_name,
@@ -283,28 +308,31 @@ class INaturalistCollector:
             "status": "OK" if downloaded > 0 else "No images found under licence criteria"
         })
         
-        # Persist checkpoints
+        # Checkpoint save
         pd.DataFrame(self.metadata_rows).to_csv(self.metadata_csv, index=False)
         pd.DataFrame(self.summary_rows).to_csv(self.summary_csv, index=False)
-        print(f"Collected {downloaded}/{target_count} images for {scientific_name}.")
+        return downloaded
 
     def run_all(self, species_list=None):
         species_list = species_list or TARGET_38_SPECIES
-        print(f"Starting licensed collection for {len(species_list)} species (target <= {self.max_images_per_species}/species)...")
+        print(f"Starting prioritized licensed collection for {len(species_list)} species (target <= {self.max_images_per_species}/species)...")
         for sc in tqdm(species_list, desc="Overall Progress"):
-            self.collect_for_species(sc)
+            cnt = self.collect_for_species(sc)
             
         print(f"\nCollection run completed. Total records saved: {len(self.metadata_rows)}")
         print(f"Manifest: {self.metadata_csv}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Collect licensed iNaturalist photos")
-    parser.add_argument("--max", type=int, default=30, help="Max images per species")
+    parser = argparse.ArgumentParser(description="Collect licensed iNaturalist photos with Pune/Maharashtra/India prioritization")
+    parser.add_argument("--max", type=int, default=50, help="Max images per species")
     parser.add_argument("--pilot", action="store_true", help="Run quick pilot for top 2 species")
+    parser.add_argument("--species", type=str, default=None, help="Specific species to collect")
     args = parser.parse_args()
     
     collector = INaturalistCollector(max_images_per_species=args.max)
-    if args.pilot:
+    if args.species:
+        collector.collect_for_species(args.species, max_images=args.max)
+    elif args.pilot:
         print("Running pilot on 2 species...")
         collector.run_all(TARGET_38_SPECIES[:2])
     else:

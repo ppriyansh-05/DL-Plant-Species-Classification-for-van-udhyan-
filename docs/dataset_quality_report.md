@@ -1,51 +1,40 @@
-# Dataset Quality Report: Van Udyan Plant Species Classification
+# Dataset Quality & Expanded Readiness Report: Van Udyan Plant Classification
 
 **Date:** 2026-10-19  
-**Total Images Analyzed:** 1,280  
-**Validated Clean Images:** 1,275  
-**Quarantined / Dropped:** 1 quarantined label (`?`), 5 exact duplicate images dropped  
-**Target Classes Represented:** 38 / 38 (100% coverage)  
+**Harvest Version:** Prioritized Multi-Tier Collection (Pune -> Maharashtra -> India -> Global)  
+**Total Images Analyzed:** 1,660  
+**Validated Clean Images on Disk:** 1,654  
+**Quarantined / Dropped:** 1 quarantined label (`?` row), 6 exact byte duplicates dropped  
+**Target Classes Represented:** 38 / 38 (100% species coverage, 40 to 58 images/species)  
 
 ---
 
 ## 1. Source Breakdown and Summary
 
-| Source Stream | Raw Images | Validated Images | Quarantined / Dropped | Attribution & Licences |
+| Source Stream | Harvested Photos | Validated Photos | Quarantined / Dropped | Attribution & Licences |
 | :--- | :---: | :---: | :---: | :--- |
 | **Van Udyan Excel (`Zone Wise Plants.xlsx`)** | 141 | 140 | 1 (Row 74: `?` unknown label) | In-situ field photos from RSWF Pune |
-| **iNaturalist API (`raw_inaturalist`)** | 1,140 | 1,135 | 5 (SHA-256 exact duplicates) | CC0, CC-BY, CC-BY-NC, CC-BY-SA, CC-BY-NC-SA |
-| **Total** | **1,280** | **1,275** | **6** | **Full metadata recorded** |
+| **iNaturalist Prioritized Harvest (`raw_inaturalist`)** | 1,519 | 1,514 | 5 (SHA-256 byte duplicates) | CC0, CC-BY, CC-BY-NC, CC-BY-SA, CC-BY-NC-SA |
+| **Total Combined** | **1,660** | **1,654** | **6** | **Full metadata recorded** |
 
 ---
 
-## 2. Partition and Split Distribution (Leakage-Free Grouped Split)
+## 2. Partition and Split Distribution (Observation-Grouped Split)
 
-Images were grouped by `group_id` (`observation_id`) to ensure multiple photos from a single plant observation never leak across splits.
+Images are grouped by `group_id` (`observation_id` for iNaturalist, `VU_ROW_xxx` for Van Udyan) so multi-angle or burst shots of the same tree specimen never cross partition boundaries.
 
 | Split Partition | Van Udyan Local Images | iNaturalist Supplementary Images | Total Images | Partition Percentage |
 | :--- | :---: | :---: | :---: | :---: |
-| **Train** | 93 | 783 | **876** | 68.7% |
-| **Validation** | 21 | 183 | **204** | 16.0% |
-| **Test (Held-out)** | 26 | 169 | **195** | 15.3% |
-| **Total** | **140** | **1,135** | **1,275** | **100.0%** |
-| *Dedicated Van Udyan Benchmark* | *140* | *0* | *140* | *Evaluation subset in test_van_udyan_benchmark/* |
+| **Train** | 101 | 1,049 | **1,150** | 69.5% |
+| **Validation** | 17 | 247 | **264** | 16.0% |
+| **Test (Held-out)** | 22 | 218 | **240** | 14.5% |
+| **Total** | **140** | **1,514** | **1,654** | **100.0%** |
+| *Dedicated Van Udyan Benchmark* | *140* | *0* | *140* | *Evaluation set in test_van_udyan_benchmark/* |
 
 ---
 
-## 3. Image Integrity & Dimensional Analysis
+## 3. Geographic Prioritization in Supplementary Harvest
 
-- **Format**: 100% validated JPEG images (Pillow verified).
-- **Width Range**: 90 px (minimum thumbnail preserved from Excel) to 500 px (standard iNaturalist medium resolution).
-- **Height Range**: 160 px to 500 px.
-- **Corrupt / Unreadable Files**: 0 corrupt files found.
-- **Aspect Ratios**: Preserved without forced stretching during data preparation; dynamic aspect-ratio resizing and standard zero-padding or scaling is handled during batch tensor loading in Colab.
-
----
-
-## 4. Class Balance Summary across 38 Species
-
-All 38 target species have between **30 and 48 total images**:
-- **Mean count per species**: $\approx 33.5$ images.
-- **Minimum count**: 30 images (*Careya arborea*, *Dalbergia sissoo*, *Gmelina arborea*, *Melia dubia*, *Sterculia urens*, *Swietenia macrophylla*, *Citrus aurantiifolia*).
-- **Maximum count**: 48 images (*Azadirachta indica* with 18 local field photos + 30 iNaturalist observations).
-- **Imbalance Mitigation**: The addition of iNaturalist observations raised the minimum sample count from 1 image to 30 images per class, resolving severe class imbalance.
+- **Pune District (`place_id=32349`)**: **372 photos** collected with direct geographic tagging in and around Pune, Maharashtra.
+- **Maharashtra State (`place_id=6683`)**: **8 photos** added from wider Maharashtra.
+- **National & Regional Fallback**: Complementary licensed photos across India to ensure every single species has at least 40 images.
