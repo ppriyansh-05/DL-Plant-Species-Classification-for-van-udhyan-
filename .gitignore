@@ -1,0 +1,30 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual environments & IDEs
+.vscode/
+.idea/
+
+# Large Datasets and Archives (Per Project Instructions & Git limits)
+data/
+*.zip
+*.tar.gz
+*.keras
+*.h5
+build_staging/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini

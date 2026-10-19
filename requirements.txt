@@ -1,0 +1,9 @@
+import pandas
+openpyxl
+Pillow
+requests
+tqdm
+scikit-learn
+matplotlib
+seaborn
+tensorflow
