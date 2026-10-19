@@ -14,9 +14,9 @@
 | **Phase 2** | Excel Extraction & Validation | **Completed** | 140 validated images, 1 quarantined row (`?`), `data/raw_excel/raw_excel_manifest.csv` |
 | **Phase 3** | Prioritized iNaturalist Collection | **Completed** | 1,519 photos across 38 species (40/species), Pune/Maharashtra prioritized (380 local photos), full CC licenses & GPS metadata |
 | **Phase 4** | Dataset Validation & Deduplication | **Completed** | 1,654 clean validated images on disk (Pillow verified, 6 duplicates dropped, 0 corrupt files) |
-| **Phase 5** | Grouped Splitting (Train/Val/Test) | **Completed** | Grouped split: 1,150 Train / 264 Val / 240 Test + dedicated `test_van_udyan_benchmark/` (140) |
-| **Phase 6** | Google Colab Training Notebook | **Completed (Ready for User)** | `Van_Udyan_Plant_Classification_Model_Training.ipynb` with auto-stepping, class weights, Drive mount, and MobileNetV2 |
-| **Phase 7** | Packaging & Run Documentation | **Completed** | `van_udyan_cleaned_dataset.zip` (257.44 MB) and `docs/colab_run_guide.md` |
+| **Phase 5** | Grouped Splitting (Train/Val/Test) | **Completed** | Strict leak-free split: 1,050 Train / 236 Val / 228 Test (all iNat) + 140 dedicated `test_van_udyan_benchmark/` (pure Excel field data) |
+| **Phase 6** | Google Colab Training Notebook | **Completed (Ready for User)** | `Van_Udyan_Plant_Classification_Model_Training.ipynb` with startup hash isolation validation and MobileNetV2 |
+| **Phase 7** | Packaging & Run Documentation | **Completed** | `van_udyan_cleaned_dataset.zip` (256.39 MB) and `docs/colab_run_guide.md` |
 | **Phase 8** | Website & Deployment | **Ready for Next Stage** | Inference backend & frontend to be built following Colab model run |
 
 ---

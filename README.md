@@ -85,9 +85,10 @@ python scripts/inaturalist_collector.py --max 30
 python scripts/prepare_dataset.py
 ```
 - Verifies Pillow image integrity.
-- Deduplicates using SHA-256 hashes.
-- Performs **grouped splitting** by `observation_id` to strictly prevent data leakage across train, val, and test partitions.
-- Creates a dedicated `test_van_udyan_benchmark/` partition for evaluating localized generalization.
+- Deduplicates using SHA-256 byte hashes.
+- Performs **grouped splitting** by `observation_id` across the 1,514 validated iNaturalist photos: **1,050 Train**, **236 Val**, and **228 Test** images across all 38 classes.
+- Keeps all **140 authentic Van Udyan field photos** strictly and exclusively in `test_van_udyan_benchmark/` to ensure zero cross-partition leakage.
+- Verifies that all 4 partition folders are 100% hash disjoint before finalizing manifests.
 
 ### Step 5: Model Training on Google Colab (User Handoff)
 1. Upload `data/processed/` (or archive `processed.zip`) to Google Drive or Colab session.

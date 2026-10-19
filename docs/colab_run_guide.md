@@ -1,10 +1,18 @@
 # Google Colab Step-by-Step Training Guide
 
 **Notebook Filename:** `Van_Udyan_Plant_Classification_Model_Training.ipynb`  
-**Dataset Archive:** `van_udyan_cleaned_dataset.zip` (257.44 MB)  
+**Dataset Archive:** `van_udyan_cleaned_dataset.zip` (256.39 MB)  
 **Target Architecture:** Transfer Learning with MobileNetV2 (Pretrained on ImageNet-1k)  
 **Number of Classes:** 38 Classes  
-**Total Images:** 1,654 (1,150 Train / 264 Val / 240 Test + 140 Van Udyan Benchmark)  
+**Total Images:** 1,654 (1,050 Train / 236 Val / 228 Test + 140 Independent Van Udyan Benchmark)  
+
+---
+
+## Partition Architecture & Zero Data Leakage
+- **Train (1,050 images)**: iNaturalist photos across 38 species.
+- **Val (236 images)**: iNaturalist photos across 38 species for early stopping and validation loss monitoring.
+- **Test (228 images)**: Held-out iNaturalist evaluation split.
+- **Dedicated Local Benchmark (140 images)**: Authentic in-situ Van Udyan field photos from `Zone Wise Plants.xlsx`. **Kept completely independent** — zero images in train, val, or regular test. Evaluated strictly post-training to measure real-world field domain adaptation.
 
 ---
 
@@ -22,21 +30,9 @@
 ---
 
 ## Step 3: Provide Dataset to Colab
-
-### Method A: Upload the Cleaned ZIP (Fastest & Simplest)
-1. On the left sidebar in Colab, click the **Folder icon** (`Files`).
-2. Click the **Upload** icon and select `van_udyan_cleaned_dataset.zip` from your computer:
+1. On the left sidebar in Colab, click the **Folder icon (`Files`)**.
+2. Drag and drop `van_udyan_cleaned_dataset.zip` from your computer into `/content/`:
    `c:\Users\ppriy\OneDrive\Desktop\semester 5\DL PROJECT - SPECIES IDENTIFICATION\van_udyan_cleaned_dataset.zip`
-3. In Cell 2 of the notebook, keep `USE_GOOGLE_DRIVE = False`.
-
-### Method B: Using Google Drive (Optional)
-If you upload `van_udyan_cleaned_dataset.zip` to your personal Google Drive:
-1. Set `USE_GOOGLE_DRIVE = True` in Cell 2.
-2. Set `DRIVE_ZIP_PATH = "/content/drive/MyDrive/van_udyan_cleaned_dataset.zip"`.
-3. Follow the authentication prompt when Cell 2 mounts Google Drive.
-
-> **Note on NGO Photos Drive Folder**:
-> If the NGO Google Drive folder (`https://drive.google.com/drive/folders/1lYT2GITixXzw1rp8lGRkQqc5vyenDH8E`) is private, you can add a shortcut of that folder to your personal Drive (`Add shortcut to Drive`), mount your Drive via Cell 2, and access images directly at `/content/drive/MyDrive/<shortcut_name>`.
 
 ---
 
@@ -44,12 +40,12 @@ If you upload `van_udyan_cleaned_dataset.zip` to your personal Google Drive:
 1. In the top menu, select **Runtime -> Run all** (`Ctrl+F9`).
 2. The notebook will automatically:
    - Check GPU and unpack the dataset.
-   - Verify all 38 classes and show image counts.
+   - Run **Strict Startup Validation**: verifies all 38 class mappings, directory file counts, and executes SHA-256 hash isolation checks to prove 0 cross-partition leakage. (Aborts with a clear error if any mismatch is found).
    - Compute balanced class weights to neutralize class imbalance.
-   - Train Stage 1 (Feature extraction with frozen MobileNetV2 backbone, Adam $\text{lr}=10^{-3}$, callbacks).
+   - Train Stage 1 (Feature extraction with frozen MobileNetV2 backbone, Adam $\text{lr}=10^{-3}$, early stopping).
    - Train Stage 2 (Fine-tuning top residual blocks, Adam $\text{lr}=10^{-5}$).
    - Evaluate held-out test split (Accuracy, Top-3 Accuracy, Macro/Weighted F1).
-   - Evaluate dedicated pure in-situ Van Udyan benchmark photos.
+   - Evaluate dedicated independent in-situ Van Udyan benchmark photos.
    - Generate and display `confusion_matrix.png` and `evaluation_classification_report.txt`.
    - Export `best_van_udyan_mobilenetv2.keras` and `class_mapping.json`.
 
