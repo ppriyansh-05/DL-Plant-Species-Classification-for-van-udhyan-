@@ -84,13 +84,20 @@ python scripts/inaturalist_collector.py --max 30
 ```bash
 python scripts/prepare_dataset.py
 ```
-- Verifies Pillow image integrity.
-- Deduplicates using SHA-256 byte hashes.
 - Performs **grouped splitting** by `observation_id` across the 1,514 validated iNaturalist photos: **1,050 Train**, **236 Val**, and **228 Test** images across all 38 classes.
 - Keeps all **140 authentic Van Udyan field photos** strictly and exclusively in `test_van_udyan_benchmark/` to ensure zero cross-partition leakage.
-- Verifies that all 4 partition folders are 100% hash disjoint before finalizing manifests.
 
-### Step 5: Model Training on Google Colab (User Handoff)
+### Step 5: Dedicated Top-15 Species Fast-Track Pipeline
+```bash
+python scripts/prepare_top15_dataset.py
+```
+- Filters exclusively for the **15 best-supported Van Udyan species** in NGO records (*Azadirachta indica*, *Mangifera indica*, *Pongamia pinnata*, *Bombax ceiba*, *Syzygium cumini*, *Alstonia scholaris*, *Terminalia bellirica*, *Terminalia catappa*, *Bauhinia variegata*, *Cordia dichotoma*, *Dalbergia latifolia*, *Erythrina variegata*, *Ficus religiosa*, *Tectona grandis*, *Ficus benghalensis*).
+- Integrates 69 authentic Van Udyan field photos into the training (54) and validation (15) splits so the model learns real-world in-situ field conditions.
+- Preserves a strictly untouched independent benchmark of **30 field photos** (2 per species) in `test_van_udyan_benchmark/`.
+- Packaged into `van_udyan_top15_cleaned_dataset.zip` (152.59 MB, 1,008 images total).
+- Dedicated Colab Notebook: `Van_Udyan_Top15_Plant_Classification_Model_Training.ipynb` (MobileNetV2 vs. EfficientNetB0 comparison).
+
+### Step 6: Model Training on Google Colab (User Handoff)
 1. Upload `data/processed/` (or archive `processed.zip`) to Google Drive or Colab session.
 2. Open `Van_Udyan_Plant_Classification_Model_Training.ipynb` in Google Colab.
 3. Select GPU Runtime (`Runtime` → `Change runtime type` → `T4 GPU`).
