@@ -97,15 +97,49 @@ python scripts/prepare_top15_dataset.py
 - Packaged into `van_udyan_top15_cleaned_dataset.zip` (152.59 MB, 1,008 images total).
 - Dedicated Colab Notebook: `Van_Udyan_Top15_Plant_Classification_Model_Training.ipynb` (MobileNetV2 vs. EfficientNetB0 comparison).
 
-### Step 6: Model Training on Google Colab (User Handoff)
-1. Upload `data/processed/` (or archive `processed.zip`) to Google Drive or Colab session.
-2. Open `Van_Udyan_Plant_Classification_Model_Training.ipynb` in Google Colab.
-3. Select GPU Runtime (`Runtime` → `Change runtime type` → `T4 GPU`).
-4. Execute cells sequentially to train MobileNetV2, generate confusion matrices, and evaluate test metrics.
+### Step 6: Web Application & Local Testing
+Launch the **Van Udyan Plant AI** web application:
+```bash
+# Run smoke tests
+python scripts/smoke_test_app.py
+
+# Launch Streamlit web app
+streamlit run app/main.py
+```
+- Open `http://localhost:8501` to test predictions, preview uploaded leaf/bark images, and inspect empirical evaluation curves.
 
 ---
 
-## 4. Citation and Attribution
+## 4. Empirical Evaluation Results
+
+| Evaluation Metric | Experiment 1: 38-Class Baseline (MobileNetV2) | Experiment 2: Top-15 Focused Model (EfficientNetB0) |
+| :--- | :---: | :---: |
+| **Taxonomic Scope** | 38 species | 15 species |
+| **Training Split Images** | 1,050 | 698 (644 iNat + 54 Field) |
+| **Validation Split Images** | 236 | 137 (122 iNat + 15 Field) |
+| **Validation Accuracy (MobileNetV2)** | *Not recorded* | 21.90% |
+| **Validation Accuracy (EfficientNetB0)** | *Not evaluated* | **26.28%** (Selected) |
+| **Held-Out Test Top-1 Accuracy** | 10.53% (24 / 228) | **23.78%** (34 / 143) |
+| **Held-Out Test Top-3 Accuracy** | 21.93% (50 / 228) | *Not recorded* (Null in JSON) |
+| **Independent Benchmark Top-1 Accuracy** | 9.29% (13 / 140) | **13.33%** (4 / 30) |
+| **Independent Benchmark Top-3 Accuracy** | 20.00% (28 / 140) | **33.33%** (10 / 30) |
+
+*Full analysis, confusion matrix diagnostics, and ecological discussion are available in [academic_report_draft.md](docs/academic_report_draft.md) and [Deep_Learning_CA3_Academic_Report_Van_Udyan.docx](docs/Deep_Learning_CA3_Academic_Report_Van_Udyan.docx).*
+
+---
+
+## 5. Cloud Deployment (Render + Supabase)
+
+The web service is configured for zero-secret deployment using **Render** and **Supabase Storage**:
+- **Deployment Specification**: [render.yaml](render.yaml)
+- **Deployment Guide**: [docs/deployment_guide.md](docs/deployment_guide.md)
+- **Environment Template**: [.env.example](.env.example)
+
+---
+
+## 6. Citation and Attribution
 
 - **Field Photography & Ground Truth**: Reform Social Welfare Foundation (RSWF), Pune – Van Udyan Biodiversity Monitoring Team.
 - **Supplementary Imagery**: iNaturalist community members under specified Creative Commons licences. Attribution metadata is preserved in `data/raw_inaturalist/inat_photo_attribution_metadata.csv`.
+- **Coursework**: Deep Learning CA3 Continuous Assessment, Semester 5, October 2026.
+

@@ -1,0 +1,53 @@
+{
+  "model_name": "EfficientNetB0 (ImageNet Transfer Learning)",
+  "checkpoint_file": "best_van_udyan_top15.keras",
+  "num_classes": 15,
+  "experiments": {
+    "experiment_1_38_class_baseline": {
+      "backbone": "MobileNetV2",
+      "classes": 38,
+      "train_images": 1050,
+      "val_images": 236,
+      "held_out_test_accuracy": 0.1053,
+      "held_out_test_top3_accuracy": 0.2193,
+      "van_udyan_benchmark_accuracy": 0.0929,
+      "van_udyan_benchmark_top3_accuracy": 0.2000,
+      "test_images_count": 228,
+      "benchmark_images_count": 140
+    },
+    "experiment_2_top15_focused": {
+      "backbone_selected": "EfficientNetB0",
+      "backbone_candidate_1_mobilenet_val_acc": 0.2190,
+      "backbone_candidate_2_effnet_val_acc": 0.2628,
+      "classes": 15,
+      "train_images": 698,
+      "val_images": 137,
+      "held_out_test_images": 143,
+      "van_udyan_benchmark_images": 30,
+      "held_out_test_top1_accuracy": 0.2378,
+      "held_out_test_top3_accuracy": null,
+      "van_udyan_benchmark_top1_accuracy": 0.1333,
+      "van_udyan_benchmark_top3_accuracy": 0.3333,
+      "macro_f1_score": null,
+      "weighted_f1_score": null,
+      "note": "Only verified empirical metrics are recorded. Unrecorded metrics remain null to uphold academic integrity."
+    }
+  },
+  "classes": [
+    "Alstonia_scholaris",
+    "Azadirachta_indica",
+    "Bauhinia_variegata",
+    "Bombax_ceiba",
+    "Cordia_dichotoma",
+    "Dalbergia_latifolia",
+    "Erythrina_variegata",
+    "Ficus_benghalensis",
+    "Ficus_religiosa",
+    "Mangifera_indica",
+    "Pongamia_pinnata",
+    "Syzygium_cumini",
+    "Tectona_grandis",
+    "Terminalia_bellirica",
+    "Terminalia_catappa"
+  ]
+}
