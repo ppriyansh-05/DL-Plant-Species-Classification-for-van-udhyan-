@@ -167,8 +167,8 @@ with st.sidebar:
     if model_status and inference_service.model is not None:
         st.success("🟢 EfficientNetB0 Active")
     else:
-        st.info("🟡 Standby Mode (Live Demo Ready)")
-        st.caption("Place `best_van_udyan_top15.keras` in the root folder or configure Supabase Storage.")
+        st.error("🔴 Model Unavailable")
+        st.caption(f"Error: {model_msg}")
     
     st.markdown("---")
     st.markdown("""
@@ -237,7 +237,12 @@ if nav_option == "🔍 Species Identifier":
 
     if active_image is not None:
         # Perform inference
-        result = inference_service.predict(active_image)
+        try:
+            result = inference_service.predict(active_image)
+        except Exception as e:
+            st.error(f"Prediction Error: {str(e)}")
+            st.info("Please ensure that 'best_van_udyan_top15.keras' is uploaded to the root directory or configure Supabase Storage.")
+            st.stop()
         
         # Two-column layout mimicking the user's provided UI reference
         col_res, col_img = st.columns([1.1, 1], gap="large")
