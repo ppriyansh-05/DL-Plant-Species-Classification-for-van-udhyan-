@@ -1,145 +1,128 @@
-# Deep Learning-Based Plant Species Classification for Urban Plantation Monitoring
+# Van Udyan Plant AI — Urban Biodiversity Deep Learning Platform
 
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![License: Creative Commons](https://img.shields.io/badge/License-CC_BY--NC-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
-[![Institution: RSWF Pune](https://img.shields.io/badge/Partner-RSWF_Pune-green.svg)](https://www.rswf.org/)
+[![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
+[![React 19](https://img.shields.io/badge/frontend-React_19_+_Vite-61DAFB.svg)](https://vitejs.dev/)
+[![Tailwind CSS v4](https://img.shields.io/badge/styling-Tailwind_CSS_v4-38B2AC.svg)](https://tailwindcss.com/)
+[![License: CC BY-NC](https://img.shields.io/badge/License-CC_BY--NC-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+[![Partner: RSWF Pune](https://img.shields.io/badge/Partner-RSWF_Pune-green.svg)](https://www.rswf.org/)
 
-## 1. Project Overview
-
-This repository contains the complete dataset preparation, extraction, quality validation, and deep learning model workflow for **"Deep Learning-Based Plant Species Classification for Urban Plantation Monitoring"**, supporting the **Van Udyan urban biodiversity monitoring initiative** with **Reform Social Welfare Foundation (RSWF), Pune**.
-
-The system is configured to recognize **38 target tree and plant species** across three distinct plantation zones (Zone 1, Zone 2, Zone 3) using transfer learning with **MobileNetV2**.
+A full-stack, nature-themed, bento-grid urban biodiversity web application powered by **FastAPI** on the backend and **React + Vite + TypeScript + Tailwind CSS** on the frontend. The platform performs real-time in-situ plant species classification across 15 native urban tree species cataloged at the **Van Udyan bio-reserve (RSWF Pune, Maharashtra)** using a fine-tuned **EfficientNetB0** deep learning model.
 
 ---
 
-## 2. Directory Structure
+## 🌿 Key Features
+
+- **Premium Dark Nature Aesthetic**: Translucent forest green glassmorphic bento cards (`rgba(20,60,42,0.55)`), delicate gold-to-green gradient typography (*Playfair Display* & *Poppins*), and interactive parallax drifting leaves.
+- **Real-Time Neural Inference**: Sub-100ms forward inference using preprocessed 224×224 RGB inputs fed to an authentic EfficientNetB0 neural network. Zero fallback hallucinations.
+- **Top-3 Prediction Trace & Animated Confidence Ring**: Dynamic SVG circular gauge colored by confidence threshold (Green ≥70%, Amber 40–70%, Red <40%) with honest low-confidence warnings below 40%.
+- **RSWF Pune Zone Distribution**: Direct mapping of species across Van Udyan Zones 1, 2, and 3.
+- **Interactive Botanical Catalog**: Filterable and searchable 15-species grid with deep botanical modal profiles (family, foliage, phenology, and ecological role).
+- **Empirical Benchmarking Dashboard**: Interactive dark-mode Recharts displaying verified evaluation splits (Held-out Test vs. Van Udyan In-Situ Benchmark) upholding strict academic transparency.
+- **Mobile First & Camera Ready**: Responsive touch UI supporting native camera capture (`capture="environment"`) for field walks.
+
+---
+
+## 🏗️ Architecture & Project Structure
 
 ```text
-├── Zone Wise Plants.xlsx                               # Source Excel workbook with embedded in-situ field photos
-├── Van_Udyan_iNaturalist_Licensed_Photo_Collector.ipynb # iNaturalist licensed photo collection Colab notebook
-├── Van_Udyan_Plant_Classification_Model_Training.ipynb  # Google Colab transfer learning training notebook
-├── requirements.txt                                    # Python dependencies
-├── scripts/
-│   ├── extract_excel_images.py                         # OpenPyXL extractor & label/quarantine validator
-│   ├── inaturalist_collector.py                        # Standalone CC-licensed iNaturalist API collector
-│   └── prepare_dataset.py                              # Dataset validation, deduplication & grouped split
-├── data/
-│   ├── raw_excel/                                      # Extracted Van Udyan field photos & manifest
-│   │   ├── images/<species_name>/
-│   │   ├── quarantine/                                 # Isolated invalid/corrupt rows (e.g. Row 74 '?')
-│   │   └── raw_excel_manifest.csv
-│   ├── raw_inaturalist/                                # Supplementary licensed iNaturalist observations
-│   │   ├── images/<species_name>/
-│   │   ├── inat_photo_attribution_metadata.csv         # Full legal attribution & observation records
-│   │   └── collection_summary.csv
-│   └── processed/                                      # Cleaned, split dataset ready for training
-│       ├── train/
-│       ├── val/
-│       ├── test/
-│       ├── test_van_udyan_benchmark/                   # Dedicated pure Van Udyan field test set
-│       ├── master_dataset_manifest.csv
-│       └── species_split_summary.csv
-└── docs/
-    ├── project_tracker.md                              # Progress tracking & phase audit
-    ├── dataset_documentation.md                        # Dataset sources, taxonomy & leakage prevention
-    ├── data_collection.md                              # API querying, polite throttling & CC licensing
-    ├── model_methodology.md                            # MobileNetV2 architecture & training protocol
-    ├── experiment_results_template.md                  # Standardized performance tables for Colab
-    └── academic_report_draft.md                        # Academic DL paper draft
+├── backend/                    # FastAPI ASGI Backend Service
+│   ├── config.py               # Taxonomy, zone mapping & storage configuration
+│   ├── inference.py            # Model loading, PIL preprocessing & Top-K prediction
+│   ├── main.py                 # REST API endpoints (/api/predict, /api/species, etc.)
+│   ├── model_loader.py         # Keras archive sanitizer & Supabase storage fallback
+│   ├── requirements.txt        # Backend Python dependencies
+│   └── test_smoke.py           # Strict backend smoke test suite
+├── frontend/                   # Modern React 19 + TypeScript + Vite SPA
+│   ├── src/
+│   │   ├── assets/             # Botanical SVGs & hero leaf illustrations
+│   │   ├── components/         # Bento features, Hero, Uploader, ConfidenceRing, Charts
+│   │   ├── lib/api.ts          # Typed REST API client
+│   │   ├── App.tsx             # Root container with code-split routes
+│   │   └── index.css           # Custom glassmorphic tokens & dark gradients
+│   ├── package.json
+│   └── vite.config.ts          # Vite build configuration with API proxy
+├── app/                        # (Legacy) Streamlit application preserved intact
+├── best_van_udyan_top15.keras  # Trained EfficientNetB0 Keras model weights
+├── class_mapping.json          # Index-to-species class dictionary (15 classes)
+├── evaluation_summary.json     # Verified empirical benchmark & test metrics
+├── render.yaml                 # Multi-service Render deployment blueprint
+└── .env.example                # Documented environment variables
 ```
 
 ---
 
-## 3. Quick Start & Execution Guide
+## 🚀 Local Development Setup
 
-### Step 1: Environment Setup
+### 1. Prerequisites
+- **Python**: 3.10+
+- **Node.js**: v18+ (tested on Node v24)
+- **Model weights**: Ensure `best_van_udyan_top15.keras` is in the project root.
+
+### 2. Backend Setup (FastAPI)
 ```bash
-python -m venv venv
-# Windows:
-.\venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
+# In project root
+python -m pip install -r backend/requirements.txt
 
-pip install -r requirements.txt
+# Run backend smoke test
+python backend/test_smoke.py
+
+# Launch FastAPI development server
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 ```
+The FastAPI backend and interactive OpenAPI documentation will be accessible at:
+- API Base: `http://127.0.0.1:8000`
+- Swagger Docs: `http://127.0.0.1:8000/docs`
+- Health Diagnostic: `http://127.0.0.1:8000/api/health`
 
-### Step 2: Extract & Validate Excel Field Images
+### 3. Frontend Setup (React + Vite)
 ```bash
-python scripts/extract_excel_images.py
-```
-- Extracts 141 embedded images from `Zone Wise Plants.xlsx`.
-- Automatically maps each image to its row label (`Scientific Name`) and `Zone`.
-- Quarantines Row 74 (`?`, Zone 2) to maintain strict taxonomic integrity.
+cd frontend
+npm install
 
-### Step 3: Run / Supplement iNaturalist Collection
-Either run in Google Colab using `Van_Udyan_iNaturalist_Licensed_Photo_Collector.ipynb` or via CLI:
-```bash
-python scripts/inaturalist_collector.py --max 30
-```
-- Respects 1.1s API rate limits and exponential backoff on HTTP 429.
-- Enforces CC0, CC-BY, CC-BY-NC, CC-BY-SA, CC-BY-NC-SA licences.
-- Logs complete photo-level attribution and GPS coordinates.
+# Build check
+npm run build
 
-### Step 4: Validate, Deduplicate, and Generate Grouped Splits
-```bash
-python scripts/prepare_dataset.py
+# Launch Vite development server
+npm run dev
 ```
-- Performs **grouped splitting** by `observation_id` across the 1,514 validated iNaturalist photos: **1,050 Train**, **236 Val**, and **228 Test** images across all 38 classes.
-- Keeps all **140 authentic Van Udyan field photos** strictly and exclusively in `test_van_udyan_benchmark/` to ensure zero cross-partition leakage.
-
-### Step 5: Dedicated Top-15 Species Fast-Track Pipeline
-```bash
-python scripts/prepare_top15_dataset.py
-```
-- Filters exclusively for the **15 best-supported Van Udyan species** in NGO records (*Azadirachta indica*, *Mangifera indica*, *Pongamia pinnata*, *Bombax ceiba*, *Syzygium cumini*, *Alstonia scholaris*, *Terminalia bellirica*, *Terminalia catappa*, *Bauhinia variegata*, *Cordia dichotoma*, *Dalbergia latifolia*, *Erythrina variegata*, *Ficus religiosa*, *Tectona grandis*, *Ficus benghalensis*).
-- Integrates 69 authentic Van Udyan field photos into the training (54) and validation (15) splits so the model learns real-world in-situ field conditions.
-- Preserves a strictly untouched independent benchmark of **30 field photos** (2 per species) in `test_van_udyan_benchmark/`.
-- Packaged into `van_udyan_top15_cleaned_dataset.zip` (152.59 MB, 1,008 images total).
-- Dedicated Colab Notebook: `Van_Udyan_Top15_Plant_Classification_Model_Training.ipynb` (MobileNetV2 vs. EfficientNetB0 comparison).
-
-### Step 6: Web Application & Local Testing
-Launch the **Van Udyan Plant AI** web application:
-```bash
-# Run smoke tests
-python scripts/smoke_test_app.py
-
-# Launch Streamlit web app
-streamlit run app/main.py
-```
-- Open `http://localhost:8501` to test predictions, preview uploaded leaf/bark images, and inspect empirical evaluation curves.
+The React web application will open at:
+- Web App: `http://127.0.0.1:5173`
 
 ---
 
-## 4. Empirical Evaluation Results
+## 🔌 API Endpoints Reference
 
-| Evaluation Metric | Experiment 1: 38-Class Baseline (MobileNetV2) | Experiment 2: Top-15 Focused Model (EfficientNetB0) |
-| :--- | :---: | :---: |
-| **Taxonomic Scope** | 38 species | 15 species |
-| **Training Split Images** | 1,050 | 698 (644 iNat + 54 Field) |
-| **Validation Split Images** | 236 | 137 (122 iNat + 15 Field) |
-| **Validation Accuracy (MobileNetV2)** | *Not recorded* | 21.90% |
-| **Validation Accuracy (EfficientNetB0)** | *Not evaluated* | **26.28%** (Selected) |
-| **Held-Out Test Top-1 Accuracy** | 10.53% (24 / 228) | **23.78%** (34 / 143) |
-| **Held-Out Test Top-3 Accuracy** | 21.93% (50 / 228) | *Not recorded* (Null in JSON) |
-| **Independent Benchmark Top-1 Accuracy** | 9.29% (13 / 140) | **13.33%** (4 / 30) |
-| **Independent Benchmark Top-3 Accuracy** | 20.00% (28 / 140) | **33.33%** (10 / 30) |
-
-*Full analysis, confusion matrix diagnostics, and ecological discussion are available in [academic_report_draft.md](docs/academic_report_draft.md) and [Deep_Learning_CA3_Academic_Report_Van_Udyan.docx](docs/Deep_Learning_CA3_Academic_Report_Van_Udyan.docx).*
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/predict` | Multipart image upload (JPG/PNG/WEBP, max 8MB). Returns `{ top_k: [...], inference_ms }`. |
+| `GET` | `/api/species` | Returns list of all 15 species with botanical family, Marathi names, and zones. |
+| `GET` | `/api/metrics` | Serves verified empirical metrics from `evaluation_summary.json`. |
+| `GET` | `/api/health` | Returns health status, model loading diagnostics, and version info. |
+| `GET` | `/api/samples` | Lists authentic Van Udyan field benchmark photos for instant one-click testing. |
 
 ---
 
-## 5. Cloud Deployment (Render + Supabase)
+## 🌐 Deployment on Render
 
-The web service is configured for zero-secret deployment using **Render** and **Supabase Storage**:
-- **Deployment Specification**: [render.yaml](render.yaml)
-- **Deployment Guide**: [docs/deployment_guide.md](docs/deployment_guide.md)
-- **Environment Template**: [.env.example](.env.example)
+The repository includes an updated `render.yaml` configuring two interconnected services:
+1. **`van-udyan-backend`**: Python Web Service executing `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`.
+2. **`van-udyan-frontend`**: Static Site building `frontend/` (`npm run build`) and serving `frontend/dist`.
+
+### Deployment Steps:
+1. Connect your repository to [Render Dashboard](https://dashboard.render.com/).
+2. Select **Blueprints** and choose `render.yaml`.
+3. In the Render environment settings, configure the following secrets if downloading model weights from Supabase:
+   - `SUPABASE_URL`: Your project URL (e.g., `https://xyz.supabase.co`)
+   - `SUPABASE_KEY`: Your service role or anon key
+   - `VITE_API_URL`: `https://van-udyan-backend.onrender.com`
 
 ---
 
-## 6. Citation and Attribution
+## 📝 Changelog (Streamlit to Modern Full-Stack Web App)
 
-- **Field Photography & Ground Truth**: Reform Social Welfare Foundation (RSWF), Pune – Van Udyan Biodiversity Monitoring Team.
-- **Supplementary Imagery**: iNaturalist community members under specified Creative Commons licences. Attribution metadata is preserved in `data/raw_inaturalist/inat_photo_attribution_metadata.csv`.
-- **Coursework**: Deep Learning CA3 Continuous Assessment, Semester 5, October 2026.
-
+- **Backend Overhaul**: Migrated monolithic Streamlit scripts into a modular FastAPI service with strict Pydantic/type validation, 8MB payload guards, and CORS configuration.
+- **Model Loading Isolation**: Pre-loads the EfficientNetB0 Keras model once at server lifespan startup; added zipfile sanitization to prevent version mismatch errors across Keras 3 releases.
+- **Pinterest-Inspired Bento UI**: Implemented dark forest green background (`#06140E` to `#0F2A1E`), translucent cards with inner glows, serif display headlines with gold-to-green text gradients, and interactive parallax botanical leaves.
+- **Enhanced Mobile Photography**: Added native camera integration (`capture="environment"`), drag-and-drop file ingestion, and one-click benchmark field sample selector.
+- **Academic Transparency Dashboard**: Integrated dark-mode Recharts displaying empirical held-out test (23.78%) and field benchmark top-3 (33.33%) metrics without pseudo-predictions.

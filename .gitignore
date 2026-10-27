@@ -24,7 +24,15 @@ data/
 *.h5
 build_staging/
 
+# Web & Node artifacts
+node_modules/
+frontend/node_modules/
+frontend/dist/
+*.local
+.env
+
 # Operating System files
 .DS_Store
 Thumbs.db
 desktop.ini
+

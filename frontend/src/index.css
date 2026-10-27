@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-deep: #06140E;
+    --bg-forest: #0F2A1E;
+    --accent-leaf: #52B788;
+    --accent-gold: #C9A227;
+    --accent-olive: #B7C56A;
+    --accent-terracotta: #8B5E3C;
+    --accent-sage: #7FA38A;
+  }
+
+  body {
+    background: radial-gradient(circle at 50% 0%, #0F2A1E 0%, #06140E 75%, #040D09 100%);
+    background-attachment: fixed;
+    color: #E2E8F0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  .font-heading {
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+/* Custom Glassmorphism & Bento Design System */
+.bento-card {
+  background: rgba(20, 60, 42, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 20px 40px -15px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-card:hover {
+  border-color: rgba(82, 183, 136, 0.35);
+  box-shadow: 
+    0 25px 50px -12px rgba(6, 20, 14, 0.7),
+    0 0 25px 0 rgba(82, 183, 136, 0.15),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.bento-card-terracotta {
+  background: rgba(65, 38, 25, 0.65);
+  border: 1px solid rgba(221, 161, 94, 0.15);
+  box-shadow: 
+    0 20px 40px -15px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px 0 rgba(221, 161, 94, 0.15);
+}
+
+.bento-card-terracotta:hover {
+  border-color: rgba(221, 161, 94, 0.4);
+  box-shadow: 
+    0 25px 50px -12px rgba(35, 18, 10, 0.8),
+    0 0 25px 0 rgba(221, 161, 94, 0.15),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.bento-card-sage {
+  background: rgba(38, 68, 52, 0.6);
+  border: 1px solid rgba(127, 163, 138, 0.18);
+  box-shadow: 
+    0 20px 40px -15px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px 0 rgba(127, 163, 138, 0.15);
+}
+
+.bento-card-sage:hover {
+  border-color: rgba(127, 163, 138, 0.4);
+  box-shadow: 
+    0 25px 50px -12px rgba(6, 20, 14, 0.7),
+    0 0 25px 0 rgba(127, 163, 138, 0.18),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Gradient typography */
+.text-gold-leaf-gradient {
+  background: linear-gradient(135deg, #F9E79F 0%, #C9A227 35%, #B7C56A 65%, #52B788 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gold-bright {
+  background: linear-gradient(135deg, #FFF3C4 0%, #F5C542 50%, #C9A227 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Uppercase pill tags */
+.pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
+  background: rgba(201, 162, 39, 0.15);
+  border: 1px solid rgba(201, 162, 39, 0.35);
+  color: #F4E087;
+}
+
+.pill-tag-green {
+  background: rgba(82, 183, 136, 0.15);
+  border: 1px solid rgba(82, 183, 136, 0.35);
+  color: #52B788;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #06140E;
+}
+::-webkit-scrollbar-thumb {
+  background: #1B4332;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52B788;
+}
